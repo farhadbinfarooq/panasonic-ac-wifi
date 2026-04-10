@@ -69,13 +69,11 @@ namespace esphome
 
             if (this->swing_horizontal_)
             {
-                this->swingh_->traits.set_options({STR_SWINGH_AUTO, STR_SWINGH_LEFTMAX, STR_SWINGH_LEFT, STR_SWINGH_MIDDLE, STR_SWINGH_RIGHT, STR_SWINGH_RIGHTMAX});
-                this->swingh_->set_internal(false);
+                this->swingh_->traits.set_options({STR_SWINGH_AUTO, STR_SWINGH_LEFTMAX, STR_SWINGH_LEFT, STR_SWINGH_MIDDLE, STR_SWINGH_RIGHT, STR_SWINGH_RIGHTMAX}); 
             }
             else
             {
                 this->swingh_->traits.set_options({});
-                this->swingh_->set_internal(true);
             }
 
             // initial state

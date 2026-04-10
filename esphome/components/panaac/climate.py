@@ -15,7 +15,7 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import climate_ir, select
-from esphome.const import CONF_ID, CONF_NAME, CONF_DISABLED_BY_DEFAULT
+from esphome.const import CONF_ID, CONF_NAME, CONF_DISABLED_BY_DEFAULT, CONF_INTERNAL
 
 AUTO_LOAD = ['climate_ir','select']
 
@@ -69,7 +69,7 @@ async def to_code(config):
     await cg.register_component(fanlevel, fanlevel_default_config)
     cg.add(fanlevel.set_parent_climate(var))
     cg.add(var.set_fanlevel(fanlevel))
-    
+
     # SwingV select
     swingv_default_config = {   CONF_ID: config[CONF_SWINGV_ID],
                                 CONF_NAME: "- Swing Vertical",
@@ -81,9 +81,13 @@ async def to_code(config):
     cg.add(var.set_swingv(swingv))
 
     # SwingH select
+    # When swing_horizontal is disabled, mark the entity internal at compile-time.
+    # This replaces the deprecated runtime set_internal() calls in panaac.cpp.
     swingh_default_config = {   CONF_ID: config[CONF_SWINGH_ID],
                                 CONF_NAME: "- Swing Horizontal",
                                 CONF_DISABLED_BY_DEFAULT: False}
+    if not config[CONF_SWING_HORIZONTAL]:
+        swingh_default_config[CONF_INTERNAL] = True
     swingh = cg.new_Pvariable(config[CONF_SWINGH_ID])
     await select.register_select(swingh, swingh_default_config, options=[])
     await cg.register_component(swingh, swingh_default_config)
