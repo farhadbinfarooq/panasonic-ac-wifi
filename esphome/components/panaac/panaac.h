@@ -29,7 +29,8 @@ namespace esphome
         public:
             PanaACClimate() : climate_ir::ClimateIR(
                                   PANAAC_TEMP_MIN, PANAAC_TEMP_MAX, 1.0f, true, true,
-                                  {}, {}, {})
+                                  {}, {}, {}),
+                                  traits_()
                                   {}
 
             void set_swing_horizontal(bool swing_horizontal) { this->swing_horizontal_ = swing_horizontal; }
@@ -58,6 +59,8 @@ namespace esphome
             bool decode_data(remote_base::RemoteReceiveData data, std::vector<uint8_t>& state_bytes);
             bool decode_state(std::vector<uint8_t> state_bytes, ClimateState& state);
             
+            climate::ClimateTraits traits_;
+
             float temp_step_;
             bool supports_quiet_;
             bool fan_5level_;

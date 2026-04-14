@@ -36,33 +36,41 @@ namespace esphome
             ac_state.last_swing_v_pos = PANAAC_SWINGV_MIDDLE;
             ac_state.last_swing_h_pos = PANAAC_SWINGH_MIDDLE;
 
-            // --- Set climate traits once here instead of rebuilding on every traits() call ---
+            // --- Build traits_ once here instead of rebuilding on every traits() call ---
+            traits_.set_visual_min_temperature(PANAAC_TEMP_MIN);
+            traits_.set_visual_max_temperature(PANAAC_TEMP_MAX);
+            traits_.set_visual_temperature_step(this->temp_step_);
+            if (this->sensor_ != nullptr)
+                traits_.add_feature_flags(climate::ClimateFeature::CLIMATE_SUPPORTS_CURRENT_TEMPERATURE);
+            else
+                traits_.clear_feature_flags(climate::ClimateFeature::CLIMATE_SUPPORTS_CURRENT_TEMPERATURE);
+            traits_.clear_feature_flags(climate::ClimateFeature::CLIMATE_SUPPORTS_ACTION);
 
             // Supported modes
-            this->set_supported_modes({climate::CLIMATE_MODE_OFF, climate::CLIMATE_MODE_AUTO, climate::CLIMATE_MODE_DRY});
+            traits_.set_supported_modes({climate::CLIMATE_MODE_OFF, climate::CLIMATE_MODE_AUTO, climate::CLIMATE_MODE_DRY});
             if (this->supports_cool_)
-                this->add_supported_mode(climate::CLIMATE_MODE_COOL);
+                traits_.add_supported_mode(climate::CLIMATE_MODE_COOL);
             if (this->supports_heat_)
-                this->add_supported_mode(climate::CLIMATE_MODE_HEAT);
+                traits_.add_supported_mode(climate::CLIMATE_MODE_HEAT);
             if (this->supports_fan_only_)
-                this->add_supported_mode(climate::CLIMATE_MODE_FAN_ONLY);
+                traits_.add_supported_mode(climate::CLIMATE_MODE_FAN_ONLY);
 
             // Supported fan modes
-            this->set_supported_fan_modes({
+            traits_.set_supported_fan_modes({
                 climate::CLIMATE_FAN_AUTO,
                 climate::CLIMATE_FAN_LOW,       // level 1
                 climate::CLIMATE_FAN_MEDIUM,    // level 3
                 climate::CLIMATE_FAN_HIGH       // level 5
             });
             if (this->supports_quiet_)
-                this->add_supported_fan_mode(climate::CLIMATE_FAN_QUIET);
+                traits_.add_supported_fan_mode(climate::CLIMATE_FAN_QUIET);
 
             // Supported swing modes
-            this->set_supported_swing_modes({climate::CLIMATE_SWING_OFF, climate::CLIMATE_SWING_VERTICAL});
+            traits_.set_supported_swing_modes({climate::CLIMATE_SWING_OFF, climate::CLIMATE_SWING_VERTICAL});
             if (this->swing_horizontal_)
             {
-                this->add_supported_swing_mode(climate::CLIMATE_SWING_HORIZONTAL);
-                this->add_supported_swing_mode(climate::CLIMATE_SWING_BOTH);
+                traits_.add_supported_swing_mode(climate::CLIMATE_SWING_HORIZONTAL);
+                traits_.add_supported_swing_mode(climate::CLIMATE_SWING_BOTH);
             }
 
             // fan level options
@@ -123,20 +131,8 @@ namespace esphome
         }
 
         climate::ClimateTraits PanaACClimate::traits() {
-            // Modes, fan modes, swing modes, and temperature range are set once in setup().
-            // Only current-temperature support depends on runtime state (sensor presence).
-            auto traits = climate_ir::ClimateIR::traits();
-            traits.set_visual_temperature_step(this->temp_step_);
-            if (this->sensor_ != nullptr)
-            {
-                traits.add_feature_flags(climate::ClimateFeature::CLIMATE_SUPPORTS_CURRENT_TEMPERATURE);
-            }
-            else
-            {
-                traits.clear_feature_flags(climate::ClimateFeature::CLIMATE_SUPPORTS_CURRENT_TEMPERATURE);
-            }
-            traits.clear_feature_flags(climate::ClimateFeature::CLIMATE_SUPPORTS_ACTION);
-            return traits;
+            // traits_ is fully built once in setup() — just return it.
+            return traits_;
         }
         
         bool PanaACClimate::decode_data(remote_base::RemoteReceiveData data, std::vector<uint8_t>& state_bytes)
