@@ -29,16 +29,7 @@ namespace esphome
         public:
             PanaACClimate() : climate_ir::ClimateIR(
                                   PANAAC_TEMP_MIN, PANAAC_TEMP_MAX, 1.0f, true, true,
-                                  {climate::CLIMATE_FAN_AUTO,
-                                   climate::CLIMATE_FAN_LOW,
-                                   climate::CLIMATE_FAN_MEDIUM,
-                                   climate::CLIMATE_FAN_HIGH,
-                                   climate::CLIMATE_FAN_QUIET},
-                                  {climate::CLIMATE_SWING_OFF,
-                                   climate::CLIMATE_SWING_BOTH,
-                                   climate::CLIMATE_SWING_VERTICAL,
-                                   climate::CLIMATE_SWING_HORIZONTAL},
-                                  {})
+                                  {}, {}, {})
                                   {}
 
             void set_swing_horizontal(bool swing_horizontal) { this->swing_horizontal_ = swing_horizontal; }

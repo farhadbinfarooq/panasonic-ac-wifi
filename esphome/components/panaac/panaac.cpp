@@ -36,6 +36,35 @@ namespace esphome
             ac_state.last_swing_v_pos = PANAAC_SWINGV_MIDDLE;
             ac_state.last_swing_h_pos = PANAAC_SWINGH_MIDDLE;
 
+            // --- Set climate traits once here instead of rebuilding on every traits() call ---
+
+            // Supported modes
+            this->set_supported_modes({climate::CLIMATE_MODE_OFF, climate::CLIMATE_MODE_AUTO, climate::CLIMATE_MODE_DRY});
+            if (this->supports_cool_)
+                this->add_supported_mode(climate::CLIMATE_MODE_COOL);
+            if (this->supports_heat_)
+                this->add_supported_mode(climate::CLIMATE_MODE_HEAT);
+            if (this->supports_fan_only_)
+                this->add_supported_mode(climate::CLIMATE_MODE_FAN_ONLY);
+
+            // Supported fan modes
+            this->set_supported_fan_modes({
+                climate::CLIMATE_FAN_AUTO,
+                climate::CLIMATE_FAN_LOW,       // level 1
+                climate::CLIMATE_FAN_MEDIUM,    // level 3
+                climate::CLIMATE_FAN_HIGH       // level 5
+            });
+            if (this->supports_quiet_)
+                this->add_supported_fan_mode(climate::CLIMATE_FAN_QUIET);
+
+            // Supported swing modes
+            this->set_supported_swing_modes({climate::CLIMATE_SWING_OFF, climate::CLIMATE_SWING_VERTICAL});
+            if (this->swing_horizontal_)
+            {
+                this->add_supported_swing_mode(climate::CLIMATE_SWING_HORIZONTAL);
+                this->add_supported_swing_mode(climate::CLIMATE_SWING_BOTH);
+            }
+
             // fan level options
             FixedVector<const char *> fanlevel_options;
             fanlevel_options.init(7);
@@ -94,8 +123,10 @@ namespace esphome
         }
 
         climate::ClimateTraits PanaACClimate::traits() {
-            
-            auto traits = climate::ClimateTraits();
+            // Modes, fan modes, swing modes, and temperature range are set once in setup().
+            // Only current-temperature support depends on runtime state (sensor presence).
+            auto traits = climate_ir::ClimateIR::traits();
+            traits.set_visual_temperature_step(this->temp_step_);
             if (this->sensor_ != nullptr)
             {
                 traits.add_feature_flags(climate::ClimateFeature::CLIMATE_SUPPORTS_CURRENT_TEMPERATURE);
@@ -105,37 +136,6 @@ namespace esphome
                 traits.clear_feature_flags(climate::ClimateFeature::CLIMATE_SUPPORTS_CURRENT_TEMPERATURE);
             }
             traits.clear_feature_flags(climate::ClimateFeature::CLIMATE_SUPPORTS_ACTION);
-            traits.set_visual_min_temperature(PANAAC_TEMP_MIN);
-            traits.set_visual_max_temperature(PANAAC_TEMP_MAX);
-            traits.set_visual_temperature_step(this->temp_step_);
-            traits.set_supported_modes({climate::CLIMATE_MODE_OFF, climate::CLIMATE_MODE_AUTO, climate::CLIMATE_MODE_DRY});
-            
-            if (this->supports_cool_)
-                traits.add_supported_mode(climate::CLIMATE_MODE_COOL);
-            if (this->supports_heat_)
-                traits.add_supported_mode(climate::CLIMATE_MODE_HEAT);
-            if (this->supports_fan_only_)
-                traits.add_supported_mode(climate::CLIMATE_MODE_FAN_ONLY);
-            
-            // Default to only 3 levels in ESPHome
-            traits.set_supported_fan_modes(
-                {   climate::CLIMATE_FAN_AUTO,
-                    climate::CLIMATE_FAN_LOW,       // level 1
-                    climate::CLIMATE_FAN_MEDIUM,    // level 3
-                    climate::CLIMATE_FAN_HIGH       // level 5
-                });
-
-            if (this->supports_quiet_)
-                traits.add_supported_fan_mode(climate::CLIMATE_FAN_QUIET);
-
-            traits.set_supported_swing_modes({climate::CLIMATE_SWING_OFF, climate::CLIMATE_SWING_VERTICAL});
-            
-            if (this->swing_horizontal_)
-            {
-                traits.add_supported_swing_mode(climate::CLIMATE_SWING_HORIZONTAL);
-                traits.add_supported_swing_mode(climate::CLIMATE_SWING_BOTH);
-            }
-            
             return traits;
         }
         
