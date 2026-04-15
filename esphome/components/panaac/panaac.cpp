@@ -36,43 +36,6 @@ namespace esphome
             ac_state.last_swing_v_pos = PANAAC_SWINGV_MIDDLE;
             ac_state.last_swing_h_pos = PANAAC_SWINGH_MIDDLE;
 
-            // --- Build traits_ once here instead of rebuilding on every traits() call ---
-            traits_.set_visual_min_temperature(PANAAC_TEMP_MIN);
-            traits_.set_visual_max_temperature(PANAAC_TEMP_MAX);
-            traits_.set_visual_temperature_step(this->temp_step_);
-            if (this->sensor_ != nullptr)
-                traits_.add_feature_flags(climate::ClimateFeature::CLIMATE_SUPPORTS_CURRENT_TEMPERATURE);
-            else
-                traits_.clear_feature_flags(climate::ClimateFeature::CLIMATE_SUPPORTS_CURRENT_TEMPERATURE);
-            traits_.clear_feature_flags(climate::ClimateFeature::CLIMATE_SUPPORTS_ACTION);
-
-            // Supported modes
-            traits_.set_supported_modes({climate::CLIMATE_MODE_OFF, climate::CLIMATE_MODE_AUTO, climate::CLIMATE_MODE_DRY});
-            if (this->supports_cool_)
-                traits_.add_supported_mode(climate::CLIMATE_MODE_COOL);
-            if (this->supports_heat_)
-                traits_.add_supported_mode(climate::CLIMATE_MODE_HEAT);
-            if (this->supports_fan_only_)
-                traits_.add_supported_mode(climate::CLIMATE_MODE_FAN_ONLY);
-
-            // Supported fan modes
-            traits_.set_supported_fan_modes({
-                climate::CLIMATE_FAN_AUTO,
-                climate::CLIMATE_FAN_LOW,       // level 1
-                climate::CLIMATE_FAN_MEDIUM,    // level 3
-                climate::CLIMATE_FAN_HIGH       // level 5
-            });
-            if (this->supports_quiet_)
-                traits_.add_supported_fan_mode(climate::CLIMATE_FAN_QUIET);
-
-            // Supported swing modes
-            traits_.set_supported_swing_modes({climate::CLIMATE_SWING_OFF, climate::CLIMATE_SWING_VERTICAL});
-            if (this->swing_horizontal_)
-            {
-                traits_.add_supported_swing_mode(climate::CLIMATE_SWING_HORIZONTAL);
-                traits_.add_supported_swing_mode(climate::CLIMATE_SWING_BOTH);
-            }
-
             // fan level options
             FixedVector<const char *> fanlevel_options;
             fanlevel_options.init(7);
@@ -106,11 +69,38 @@ namespace esphome
 
             if (this->swing_horizontal_)
             {
-                this->swingh_->traits.set_options({STR_SWINGH_AUTO, STR_SWINGH_LEFTMAX, STR_SWINGH_LEFT, STR_SWINGH_MIDDLE, STR_SWINGH_RIGHT, STR_SWINGH_RIGHTMAX}); 
+                this->swingh_->traits.set_options({STR_SWINGH_AUTO, STR_SWINGH_LEFTMAX, STR_SWINGH_LEFT, STR_SWINGH_MIDDLE, STR_SWINGH_RIGHT, STR_SWINGH_RIGHTMAX});
             }
+
+            // --- Build traits_ once here instead of rebuilding on every traits() call ---
+            traits_.set_visual_min_temperature(PANAAC_TEMP_MIN);
+            traits_.set_visual_max_temperature(PANAAC_TEMP_MAX);
+            traits_.set_visual_temperature_step(this->temp_step_);
+            if (this->sensor_ != nullptr)
+                traits_.add_feature_flags(climate::ClimateFeature::CLIMATE_SUPPORTS_CURRENT_TEMPERATURE);
             else
+                traits_.clear_feature_flags(climate::ClimateFeature::CLIMATE_SUPPORTS_CURRENT_TEMPERATURE);
+            traits_.clear_feature_flags(climate::ClimateFeature::CLIMATE_SUPPORTS_ACTION);
+            traits_.set_supported_modes({climate::CLIMATE_MODE_OFF, climate::CLIMATE_MODE_AUTO, climate::CLIMATE_MODE_DRY});
+            if (this->supports_cool_)
+                traits_.add_supported_mode(climate::CLIMATE_MODE_COOL);
+            if (this->supports_heat_)
+                traits_.add_supported_mode(climate::CLIMATE_MODE_HEAT);
+            if (this->supports_fan_only_)
+                traits_.add_supported_mode(climate::CLIMATE_MODE_FAN_ONLY);
+            traits_.set_supported_fan_modes({
+                climate::CLIMATE_FAN_AUTO,
+                climate::CLIMATE_FAN_LOW,       // level 1
+                climate::CLIMATE_FAN_MEDIUM,    // level 3
+                climate::CLIMATE_FAN_HIGH       // level 5
+            });
+            if (this->supports_quiet_)
+                traits_.add_supported_fan_mode(climate::CLIMATE_FAN_QUIET);
+            traits_.set_supported_swing_modes({climate::CLIMATE_SWING_OFF, climate::CLIMATE_SWING_VERTICAL});
+            if (this->swing_horizontal_)
             {
-                this->swingh_->traits.set_options({});
+                traits_.add_supported_swing_mode(climate::CLIMATE_SWING_HORIZONTAL);
+                traits_.add_supported_swing_mode(climate::CLIMATE_SWING_BOTH);
             }
 
             // initial state
@@ -726,6 +716,14 @@ namespace esphome
             this->fan_mode = ac_state.fan_mode;
             this->swing_mode = ac_state.swing_mode;
             transmit_data();
+
+            // update state of additional selects
+            this->fanlevel_->set_fanlevel(ac_state.fan_level);
+            this->swingv_->set_swingvpos(ac_state.swing_v_pos);
+            if (this->swing_horizontal_)
+            {
+                this->swingh_->set_swinghpos(ac_state.swing_h_pos);
+            }
 
             this->publish_state();
 
