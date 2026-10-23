@@ -82,9 +82,9 @@ namespace esphome
                 traits_.clear_feature_flags(climate::ClimateFeature::CLIMATE_SUPPORTS_CURRENT_TEMPERATURE);
             traits_.clear_feature_flags(climate::ClimateFeature::CLIMATE_SUPPORTS_ACTION);
             traits_.set_supported_modes({climate::CLIMATE_MODE_OFF, climate::CLIMATE_MODE_AUTO, climate::CLIMATE_MODE_DRY});
-            if (this->supports_cool_)
+            if (this->modes_.count(climate::CLIMATE_MODE_COOL))
                 traits_.add_supported_mode(climate::CLIMATE_MODE_COOL);
-            if (this->supports_heat_)
+            if (this->modes_.count(climate::CLIMATE_MODE_HEAT))
                 traits_.add_supported_mode(climate::CLIMATE_MODE_HEAT);
             if (this->supports_fan_only_)
                 traits_.add_supported_mode(climate::CLIMATE_MODE_FAN_ONLY);
@@ -382,7 +382,7 @@ namespace esphome
             }
             
             // receiving HEAT but doesn't support HEAT
-            if (!this->supports_heat_ && ac_state.mode == climate::CLIMATE_MODE_HEAT)
+            if (!this->modes_.count(climate::CLIMATE_MODE_HEAT) && ac_state.mode == climate::CLIMATE_MODE_HEAT)
             {
                 ESP_LOGV(TAG, "Heat mode not supported");
                 return false;
